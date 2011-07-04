@@ -79,7 +79,8 @@ tx : key continues with uint256 (32 bytes)
   value is a serialized CTransaction+CMerkleTx+CWalletTx  (see below for details)
 
 key : key continues with vector<unsigned char> that is public key
-  value is vector<unsigned char> that is private key
+  value is vector<unsigned char> that is private key (full 271-byte
+    OpenSSL representation)
 
 wkey : key continues with vector<unsigned char> that is public key
   value is serialized CWalletKey:
@@ -87,6 +88,18 @@ wkey : key continues with vector<unsigned char> that is public key
     int64 nTimeCreated
     int64 nTimeExpires
     string comment
+
+ckey : enCrypted key continues with vector<unsigned char> that is public key
+  value is vector<unsigned char> that is private key (32 byte private part,
+    not full 271-byte OpenSSL representation)
+
+mkey : master key continues with unsigned int that is ID of the master key
+  value is serialized CMasterKey:
+    vector<unsigned char> encrypted key
+    vector<unsigned char> encrypted salt
+    unsigned int indicating the method to derive key from password
+    unsigned int indicating the number of times the derivation algorithm should be iterated
+    vector<unsigned char> holding other parameters to the derivation algorithm
 
 defaultkey :
   value is vector<unsigned char> default key
