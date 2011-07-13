@@ -64,6 +64,16 @@ def parse_wallet(db, item_callback):
         d['created'] = vds.read_int64()
         d['expires'] = vds.read_int64()
         d['comment'] = vds.read_string()
+      elif type == "ckey":
+        d['public_key'] = kds.read_bytes(kds.read_compact_size())
+        d['encrypted_private_key'] = vds.read_bytes(vds.read_compact_size())
+      elif type == "mkey":
+        d['nID'] = kds.read_uint32()
+        d['encrypted_key'] = vds.read_string()
+        d['salt'] = vds.read_string()
+        d['nDerivationMethod'] = vds.read_uint32()
+        d['nDerivationIterations'] = vds.read_uint32()
+        d['otherParams'] = vds.read_string()
       elif type == "defaultkey":
         d['key'] = vds.read_bytes(vds.read_compact_size())
       elif type == "pool":
@@ -135,6 +145,16 @@ def update_wallet(db, type, data):
       vds.write_int64(d['created'])
       vds.write_int64(d['expires'])
       vds.write_string(d['comment'])
+    elif type == "ckey":
+      kds.write_string(d['public_key'])
+      vds.write_string(d['encrypted_private_key'])
+    elif type == "mkey":
+      kds.write_uint32(d['nID'])
+      vds.write_string(d['encrypted_key'])
+      vds.write_string(d['salt'])
+      kds.write_uint32(d['nDerivationMethod'])
+      kds.write_uint32(d['nDerivationIterations'])
+      vds.write_string(d['otherParams'])
     elif type == "defaultkey":
       vds.write_string(d['key'])
     elif type == "pool":
@@ -182,6 +202,8 @@ def dump_wallet(db_env, print_wallet, print_wallet_transactions, transaction_fil
       transaction_index[d['tx_id']] = d
     elif type == "key":
       owner_keys[public_key_to_bc_address(d['public_key'])] = d['private_key']
+    elif type == "ckey":
+      owner_keys[public_key_to_bc_address(d['public_key'])] = d['encrypted_private_key']
 
     if not print_wallet:
       return
@@ -198,8 +220,14 @@ def dump_wallet(db_env, print_wallet, print_wallet_transactions, transaction_fil
             ": PriKey "+ short_hex(d['private_key']))
     elif type == "wkey":
       print("WPubKey 0x"+ short_hex(d['public_key']) + " " + public_key_to_bc_address(d['public_key']) +
-            ": WPriKey 0x"+ short_hex(d['private_key']))
+            ": WPriKey 0x"+ short_hex(d['encrypted_private_key']))
       print(" Created: "+time.ctime(d['created'])+" Expires: "+time.ctime(d['expires'])+" Comment: "+d['comment'])
+    elif type == "ckey":
+      print("PubKey "+ short_hex(d['public_key']) + " " + public_key_to_bc_address(d['public_key']) +
+            ": Encrypted PriKey "+ short_hex(d['encrypted_private_key']))
+    elif type == "mkey":
+      print("Master key %d : %s (salt: %s, iterations %d)"%(d['nID'], short_hex(d['encrypted_key']),
+                                                            short_hex(d['salt']), d['nDerivationIterations']))
     elif type == "defaultkey":
       print("Default Key: 0x"+ short_hex(d['key']) + " " + public_key_to_bc_address(d['key']))
     elif type == "pool":
