@@ -83,6 +83,9 @@ def parse_wallet(db, item_callback):
         d['nTime'] = vds.read_int64()
         d['otherAccount'] = vds.read_string()
         d['comment'] = vds.read_string()
+      elif type == "bestblock":
+        d['nVersion'] = vds.read_int32()
+        d.update(parse_BlockLocator(vds))
       else:
         print "Unknown key type: "+type
       
@@ -201,6 +204,8 @@ def dump_wallet(db_env, print_wallet, print_wallet_transactions, transaction_fil
     elif type == "acentry":
       print("Move '%s' %d (other: '%s', time: %s, entry %d) %s"%
             (d['account'], d['nCreditDebit'], d['otherAccount'], time.ctime(d['nTime']), d['n'], d['comment']))
+    elif type == "bestblock":
+      print deserialize_BlockLocator(d)
     else:
       print "Unknown key type: "+type
 

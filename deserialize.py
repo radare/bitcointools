@@ -173,6 +173,17 @@ def deserialize_Block(d):
   result += "\nRaw block header: "+d['__header__'].encode('hex_codec')
   return result
 
+def parse_BlockLocator(vds):
+  d = { 'hashes' : [] }
+  nHashes = vds.read_compact_size()
+  for i in xrange(nHashes):
+    d['hashes'].append(vds.read_bytes(32))
+  return d
+
+def deserialize_BlockLocator(d):
+  result = "Block Locator top: "+d['hashes'][0][::-1].encode('hex_codec')
+  return result
+
 opcodes = Enumeration("Opcodes", [
     ("OP_0", 0), ("OP_PUSHDATA1",76), "OP_PUSHDATA2", "OP_PUSHDATA4", "OP_1NEGATE", "OP_RESERVED",
     "OP_1", "OP_2", "OP_3", "OP_4", "OP_5", "OP_6", "OP_7",
