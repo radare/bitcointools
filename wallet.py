@@ -154,6 +154,11 @@ def update_wallet(db, type, data):
       vds.write_int64(d['nTime'])
       vds.write_string(d['otherAccount'])
       vds.write_string(d['comment'])
+    elif type == "bestblock":
+      vds.write_int32(d['nVersion'])
+      vds.write_compact_size(len(d['hashes']))
+      for h in d['hashes']:
+        vds.write(h)
     else:
       print "Unknown key type: "+type
 
