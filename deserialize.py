@@ -25,6 +25,8 @@ def deserialize_CAddress(d):
 def parse_setting(setting, vds):
   if setting[0] == "f":  # flag (boolean) settings
     return str(vds.read_boolean())
+  elif setting == "addrIncoming":
+    return "" # bitcoin 0.4 purposely breaks addrIncoming setting in encrypted wallets.
   elif setting[0:4] == "addr": # CAddress
     d = parse_CAddress(vds)
     return deserialize_CAddress(d)
