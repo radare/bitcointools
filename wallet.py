@@ -66,14 +66,14 @@ def parse_wallet(db, item_callback):
         d['comment'] = vds.read_string()
       elif type == "ckey":
         d['public_key'] = kds.read_bytes(kds.read_compact_size())
-        d['encrypted_private_key'] = vds.read_bytes(vds.read_compact_size())
+        d['crypted_key'] = vds.read_bytes(vds.read_compact_size())
       elif type == "mkey":
-        d['nID'] = kds.read_uint32()
-        d['encrypted_key'] = vds.read_string()
-        d['salt'] = vds.read_string()
-        d['nDerivationMethod'] = vds.read_uint32()
-        d['nDerivationIterations'] = vds.read_uint32()
-        d['otherParams'] = vds.read_string()
+        d['nID'] = kds.read_int32()
+        d['crypted_key'] = vds.read_bytes(vds.read_compact_size())
+        d['salt'] = vds.read_bytes(vds.read_compact_size())
+        d['nDerivationMethod'] = vds.read_int32()
+        d['nDeriveIterations'] = vds.read_int32()
+        d['vchOtherDerivationParameters'] = vds.read_bytes(vds.read_compact_size())
       elif type == "defaultkey":
         d['key'] = vds.read_bytes(vds.read_compact_size())
       elif type == "pool":
@@ -147,14 +147,14 @@ def update_wallet(db, type, data):
       vds.write_string(d['comment'])
     elif type == "ckey":
       kds.write_string(d['public_key'])
-      vds.write_string(d['encrypted_private_key'])
+      kds.write_string(d['crypted_key'])
     elif type == "mkey":
-      kds.write_uint32(d['nID'])
-      vds.write_string(d['encrypted_key'])
+      kds.write_int32(d['nID'])
+      vds.write_string(d['crypted_key'])
       vds.write_string(d['salt'])
-      kds.write_uint32(d['nDerivationMethod'])
-      kds.write_uint32(d['nDerivationIterations'])
-      vds.write_string(d['otherParams'])
+      vds.write_int32(d['nDeriveIterations'])
+      vds.write_int32(d['nDerivationMethod'])
+      vds.write_string(d['vchOtherDerivationParameters'])
     elif type == "defaultkey":
       vds.write_string(d['key'])
     elif type == "pool":
@@ -203,7 +203,7 @@ def dump_wallet(db_env, print_wallet, print_wallet_transactions, transaction_fil
     elif type == "key":
       owner_keys[public_key_to_bc_address(d['public_key'])] = d['private_key']
     elif type == "ckey":
-      owner_keys[public_key_to_bc_address(d['public_key'])] = d['encrypted_private_key']
+      owner_keys[public_key_to_bc_address(d['public_key'])] = d['crypted_key']
 
     if not print_wallet:
       return
@@ -220,14 +220,16 @@ def dump_wallet(db_env, print_wallet, print_wallet_transactions, transaction_fil
             ": PriKey "+ short_hex(d['private_key']))
     elif type == "wkey":
       print("WPubKey 0x"+ short_hex(d['public_key']) + " " + public_key_to_bc_address(d['public_key']) +
-            ": WPriKey 0x"+ short_hex(d['encrypted_private_key']))
+            ": WPriKey 0x"+ short_hex(d['crypted_key']))
       print(" Created: "+time.ctime(d['created'])+" Expires: "+time.ctime(d['expires'])+" Comment: "+d['comment'])
     elif type == "ckey":
       print("PubKey "+ short_hex(d['public_key']) + " " + public_key_to_bc_address(d['public_key']) +
-            ": Encrypted PriKey "+ short_hex(d['encrypted_private_key']))
+            ": Encrypted PriKey "+ short_hex(d['crypted_key']))
     elif type == "mkey":
-      print("Master key %d : %s (salt: %s, iterations %d)"%(d['nID'], short_hex(d['encrypted_key']),
-                                                            short_hex(d['salt']), d['nDerivationIterations']))
+      print("Master Key %d"%(d['nID']) + ": 0x"+ short_hex(d['crypted_key']) +
+            ", Salt: 0x"+ short_hex(d['salt']) +
+            ". Passphrase hashed %d times with method %d with other parameters 0x"%(d['nDeriveIterations'], d['nDerivationMethod']) +
+            long_hex(d['vchOtherDerivationParameters']))
     elif type == "defaultkey":
       print("Default Key: 0x"+ short_hex(d['key']) + " " + public_key_to_bc_address(d['key']))
     elif type == "pool":
@@ -334,7 +336,7 @@ def trim_wallet(db_env, destFileName, pre_put_callback=None):
     should_write = False
     if type in [ 'version', 'name', 'acc' ]:
       should_write = True
-    if type in [ 'key', 'wkey' ] and hash_160(d['public_key']) in pubkeys:
+    if type in [ 'key', 'wkey', 'ckey' ] and hash_160(d['public_key']) in pubkeys:
       should_write = True
     if pre_put_callback is not None:
       should_write = pre_put_callback(type, d, pubkeys)
