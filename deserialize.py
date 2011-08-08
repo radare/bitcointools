@@ -146,7 +146,20 @@ def deserialize_WalletTx(d, transaction_index=None, owner_keys=None):
   result += " fromMe:"+str(d['fromMe'])+" spent:"+str(d['spent'])
   return result
 
-def parse_Block(vds):
+# The CAuxPow (auxiliary proof of work) structure supports merged mining.
+# A flag in the block version field indicates the structure's presence.
+# As of 8/2011, the Original Bitcoin Client does not use it.  CAuxPow
+# originated in Namecoin; see
+# https://github.com/vinced/namecoin/blob/mergedmine/doc/README_merged-mining.md.
+def parse_AuxPow(vds):
+  d = parse_MerkleTx(vds)
+  n_chainMerkleBranch = vds.read_compact_size()
+  d['chainMerkleBranch'] = vds.read_bytes(32*n_chainMerkleBranch)
+  d['chainIndex'] = vds.read_int32()
+  d['parentBlock'] = parse_BlockHeader(vds)
+  return d
+
+def parse_BlockHeader(vds):
   d = {}
   header_start = vds.read_cursor
   d['version'] = vds.read_int32()
@@ -157,6 +170,12 @@ def parse_Block(vds):
   d['nNonce'] = vds.read_uint32()
   header_end = vds.read_cursor
   d['__header__'] = vds.input[header_start:header_end]
+  return d
+
+def parse_Block(vds):
+  d = parse_BlockHeader(vds)
+  if d['version'] & (1 << 8):
+    d['auxpow'] = parse_AuxPow(vds)
   d['transactions'] = []
   nTransactions = vds.read_compact_size()
   for i in xrange(nTransactions):
