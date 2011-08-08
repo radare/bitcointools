@@ -146,6 +146,11 @@ def deserialize_WalletTx(d, transaction_index=None, owner_keys=None):
   result += " fromMe:"+str(d['fromMe'])+" spent:"+str(d['spent'])
   return result
 
+# The CAuxPow (auxiliary proof of work) structure supports merged mining.
+# A flag in the block version field indicates the structure's presence.
+# As of 8/2011, the Original Bitcoin Client does not use it.  CAuxPow
+# originated in Namecoin; see
+# https://github.com/vinced/namecoin/blob/mergedmine/doc/README_merged-mining.md.
 def parse_AuxPow(vds):
   d = parse_MerkleTx(vds)
   n_chainMerkleBranch = vds.read_compact_size()
