@@ -96,6 +96,9 @@ def parse_wallet(db, item_callback):
       elif type == "bestblock":
         d['nVersion'] = vds.read_int32()
         d.update(parse_BlockLocator(vds))
+      elif type == "cscript":
+        d['scriptHash'] = kds.read_bytes(20)
+        d['script'] = vds.read_bytes(vds.read_compact_size())
       else:
         print "Unknown key type: "+type
       
@@ -241,6 +244,8 @@ def dump_wallet(db_env, print_wallet, print_wallet_transactions, transaction_fil
             (d['account'], d['nCreditDebit'], d['otherAccount'], time.ctime(d['nTime']), d['n'], d['comment']))
     elif type == "bestblock":
       print deserialize_BlockLocator(d)
+    elif type == "cscript":
+      print("CScript: %s : %s"%(public_key_to_bc_address(d['scriptHash'], "\x01"), long_hex(d['script'])))
     else:
       print "Unknown key type: "+type
 

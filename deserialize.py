@@ -221,6 +221,8 @@ opcodes = Enumeration("Opcodes", [
     "OP_WITHIN", "OP_RIPEMD160", "OP_SHA1", "OP_SHA256", "OP_HASH160",
     "OP_HASH256", "OP_CODESEPARATOR", "OP_CHECKSIG", "OP_CHECKSIGVERIFY", "OP_CHECKMULTISIG",
     "OP_CHECKMULTISIGVERIFY",
+    "OP_EVAL",
+    "OP_NOP2", "OP_NOP3", "OP_NOP4", "OP_NOP5", "OP_NOP6", "OP_NOP7", "OP_NOP8", "OP_NOP9", "OP_NOP10",
     ("OP_SINGLEBYTE_END", 0xF0),
     ("OP_DOUBLEBYTE_BEGIN", 0xF000),
     "OP_PUBKEY", "OP_PUBKEYHASH",
@@ -299,5 +301,11 @@ def extract_public_key(bytes):
   match = [ opcodes.OP_DUP, opcodes.OP_HASH160, opcodes.OP_PUSHDATA4, opcodes.OP_EQUALVERIFY, opcodes.OP_CHECKSIG ]
   if match_decoded(decoded, match):
     return hash_160_to_bc_address(decoded[2][1])
+
+  # OP_EVAL TxOuts look like:
+  # DUP HASH160 20 BYTES:... EQUALVERIFY CHECKSIG
+  match = [ opcodes.OP_DUP, opcodes.OP_HASH160, opcodes.OP_PUSHDATA4, opcodes.OP_EQUALVERIFY, opcodes.OP_EVAL ]
+  if match_decoded(decoded, match):
+    return hash_160_to_bc_address(decoded[2][1], version="\x01")
 
   return "(None)"
