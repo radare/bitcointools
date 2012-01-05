@@ -5,6 +5,7 @@
 from BCDataStream import *
 from enumeration import Enumeration
 from base58 import public_key_to_bc_address, hash_160_to_bc_address
+import logging
 import socket
 import time
 from util import short_hex, long_hex
@@ -174,9 +175,9 @@ def parse_BlockHeader(vds):
 
 def parse_Block(vds):
   d = parse_BlockHeader(vds)
-  if d['version'] & (1 << 8):
-    d['auxpow'] = parse_AuxPow(vds)
   d['transactions'] = []
+#  if d['version'] & (1 << 8):
+#    d['auxpow'] = parse_AuxPow(vds)
   nTransactions = vds.read_compact_size()
   for i in xrange(nTransactions):
     d['transactions'].append(parse_Transaction(vds))
