@@ -24,7 +24,7 @@ def main():
                     help="Look for files here (defaults to bitcoin default)")
   parser.add_option("--regex", dest="lookfor", default="OP_EVAL",
                     help="Look for string/regular expression")
-  parser.add_option("--n", dest="howmany", default=-1, type="int",
+  parser.add_option("--n", dest="howmany", default=999999, type="int",
                     help="Look back this many blocks (default: all)")
   parser.add_option("--verbose", dest="verbose", default=False, action="store_true",
                     help="Print blocks that match")
