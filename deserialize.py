@@ -222,8 +222,7 @@ opcodes = Enumeration("Opcodes", [
     "OP_WITHIN", "OP_RIPEMD160", "OP_SHA1", "OP_SHA256", "OP_HASH160",
     "OP_HASH256", "OP_CODESEPARATOR", "OP_CHECKSIG", "OP_CHECKSIGVERIFY", "OP_CHECKMULTISIG",
     "OP_CHECKMULTISIGVERIFY",
-    "OP_EVAL",
-    "OP_NOP2", "OP_NOP3", "OP_NOP4", "OP_NOP5", "OP_NOP6", "OP_NOP7", "OP_NOP8", "OP_NOP9", "OP_NOP10",
+    "OP_NOP1", "OP_NOP2", "OP_NOP3", "OP_NOP4", "OP_NOP5", "OP_NOP6", "OP_NOP7", "OP_NOP8", "OP_NOP9", "OP_NOP10",
     ("OP_INVALIDOPCODE", 0xFF),
 ])
 
@@ -286,7 +285,7 @@ def extract_public_key(bytes):
 
   # non-generated TxIn transactions push a signature
   # (seventy-something bytes) and then their public key
-  # (65 bytes) onto the stack:
+  # (33 or 65 bytes) onto the stack:
   match = [ opcodes.OP_PUSHDATA4, opcodes.OP_PUSHDATA4 ]
   if match_decoded(decoded, match):
     return public_key_to_bc_address(decoded[1][1])
@@ -303,10 +302,21 @@ def extract_public_key(bytes):
   if match_decoded(decoded, match):
     return hash_160_to_bc_address(decoded[2][1])
 
-  # OP_EVAL TxOuts look like:
-  # DUP HASH160 20 BYTES:... EQUALVERIFY CHECKSIG
-  match = [ opcodes.OP_DUP, opcodes.OP_HASH160, opcodes.OP_PUSHDATA4, opcodes.OP_EQUALVERIFY, opcodes.OP_EVAL ]
+  # BIP11 TxOuts look like one of these:
+  # Note that match_decoded is dumb, so OP_1 actually matches OP_1/2/3/etc:
+  multisigs = [
+    [ opcodes.OP_1, opcodes.OP_PUSHDATA4, opcodes.OP_1, opcodes.OP_CHECKMULTISIG ],
+    [ opcodes.OP_2, opcodes.OP_PUSHDATA4, opcodes.OP_PUSHDATA4, opcodes.OP_2, opcodes.OP_CHECKMULTISIG ],
+    [ opcodes.OP_3, opcodes.OP_PUSHDATA4, opcodes.OP_PUSHDATA4, opcodes.OP_3, opcodes.OP_CHECKMULTISIG ]
+  ]
+  for match in multisigs:
+    if match_decoded(decoded, match):
+      return "["+[ public_key_to_bc_address(decoded[i][1]) for i in range(1,len(decoded-1)) ]+"]"
+
+  # BIP16 TxOuts look like:
+  # HASH160 20 BYTES:... EQUAL
+  match = [ opcodes.OP_HASH160, 0x14, opcodes.OP_EQUAL ]
   if match_decoded(decoded, match):
-    return hash_160_to_bc_address(decoded[2][1], version="\x01")
+    return hash_160_to_bc_address(decoded[1][1], version="\x05")
 
   return "(None)"

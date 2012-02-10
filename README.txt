@@ -4,9 +4,6 @@ you might want to backup your Bitcoin wallet.dat file just in case.
 
 You must quit Bitcoin before reading the transactions, blocks, or address database files.
 
-Requires the pycrypto library from  http://www.dlitz.net/software/pycrypto/
-to translate public keys into human-friendly Bitcoin addresses.
-
 Examples:
 
 Print out  wallet keys and transactions:
