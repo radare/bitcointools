@@ -22,8 +22,8 @@ def main():
   parser = optparse.OptionParser(usage="%prog [options]")
   parser.add_option("--datadir", dest="datadir", default=None,
                     help="Look for files here (defaults to bitcoin default)")
-  parser.add_option("--regex", dest="lookfor", default="OP_EVAL",
-                    help="Look for string/regular expression")
+  parser.add_option("--regex", dest="lookfor", default="/P2SH/",
+                    help="Look for string/regular expression (default: %default)")
   parser.add_option("--n", dest="howmany", default=999999, type="int",
                     help="Look back this many blocks (default: all)")
   parser.add_option("--verbose", dest="verbose", default=False, action="store_true",

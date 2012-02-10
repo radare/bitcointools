@@ -224,10 +224,7 @@ opcodes = Enumeration("Opcodes", [
     "OP_CHECKMULTISIGVERIFY",
     "OP_EVAL",
     "OP_NOP2", "OP_NOP3", "OP_NOP4", "OP_NOP5", "OP_NOP6", "OP_NOP7", "OP_NOP8", "OP_NOP9", "OP_NOP10",
-    ("OP_SINGLEBYTE_END", 0xF0),
-    ("OP_DOUBLEBYTE_BEGIN", 0xF000),
-    "OP_PUBKEY", "OP_PUBKEYHASH",
-    ("OP_INVALIDOPCODE", 0xFFFF),
+    ("OP_INVALIDOPCODE", 0xFF),
 ])
 
 def script_GetOp(bytes):
@@ -236,10 +233,6 @@ def script_GetOp(bytes):
     vch = None
     opcode = ord(bytes[i])
     i += 1
-    if opcode >= opcodes.OP_SINGLEBYTE_END:
-      opcode <<= 8
-      opcode |= bytes[i]
-      i += 1
 
     if opcode <= opcodes.OP_PUSHDATA4:
       nSize = opcode
@@ -247,18 +240,25 @@ def script_GetOp(bytes):
         nSize = ord(bytes[i])
         i += 1
       elif opcode == opcodes.OP_PUSHDATA2:
-        nSize = unpack_from('<H', bytes, i)
+        (nSize,) = struct.unpack_from('<H', bytes, i)
         i += 2
       elif opcode == opcodes.OP_PUSHDATA4:
-        nSize = unpack_from('<I', bytes, i)
+        (nSize,) = struct.unpack_from('<I', bytes, i)
         i += 4
-      vch = bytes[i:i+nSize]
-      i += nSize
+      if i+nSize > len(bytes):
+        vch = "_INVALID_"+bytes[i:]
+        i = len(bytes)
+      else:
+        vch = bytes[i:i+nSize]
+        i += nSize
 
     yield (opcode, vch)
 
 def script_GetOpName(opcode):
-  return (opcodes.whatis(opcode)).replace("OP_", "")
+  try:
+    return (opcodes.whatis(opcode)).replace("OP_", "")
+  except KeyError:
+    return "InvalidOp_"+str(opcode)
 
 def decode_script(bytes):
   result = ''
