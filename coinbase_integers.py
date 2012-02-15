@@ -58,10 +58,8 @@ def main():
     if n < 6*24*365.25*100:  # 200 years of blocks:
       print("%d: %d (%s)"%(height, n, approx_date(n)))
 
-    if len(scriptSig) < 5:
-      return True
-    if ord(scriptSig[0]) == 0x04:
-      (n,) = struct.unpack_from('<I', scriptSig[1:5])
+    if ord(scriptSig[0]) == 0x03:
+      (n,) = struct.unpack_from('<I', scriptSig[1:4]+'\0')
       if n < 6*24*365.25*100:  # 200 years of blocks:
         print("%d: PUSH %d (%s)"%(height, n, approx_date(n)))
 
