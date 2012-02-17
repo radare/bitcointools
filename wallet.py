@@ -37,11 +37,16 @@ def parse_wallet(db, item_callback):
     kds.clear(); kds.write(key)
     vds.clear(); vds.write(value)
 
-    type = kds.read_string()
+    try:
+      type = kds.read_string()
 
-    d["__key__"] = key
-    d["__value__"] = value
-    d["__type__"] = type
+      d["__key__"] = key
+      d["__value__"] = value
+      d["__type__"] = type
+
+    except Exception, e:
+      print("ERROR attempting to read data from wallet.dat, type %s"%type)
+      continue
 
     try:
       if type == "tx":
@@ -100,7 +105,8 @@ def parse_wallet(db, item_callback):
         d['scriptHash'] = kds.read_bytes(20)
         d['script'] = vds.read_bytes(vds.read_compact_size())
       else:
-        print "Unknown key type: "+type
+        print "Skipping item of type "+type
+        continue
       
       item_callback(type, d)
 
