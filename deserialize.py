@@ -17,7 +17,7 @@ def parse_CAddress(vds):
   d['nServices'] = vds.read_uint64()
   d['pchReserved'] = vds.read_bytes(12)
   d['ip'] = socket.inet_ntoa(vds.read_bytes(4))
-  d['port'] = vds.read_uint16()
+  d['port'] = socket.htons(vds.read_uint16())
   return d
 
 def deserialize_CAddress(d):
