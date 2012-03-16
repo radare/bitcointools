@@ -26,6 +26,8 @@ def main():
                     help="Look for string/regular expression (default: %default)")
   parser.add_option("--n", dest="howmany", default=999999, type="int",
                     help="Look back this many blocks (default: all)")
+  parser.add_option("--start", dest="start", default=0, type="int",
+                    help="Skip this many blocks to start (default: 0)")
   parser.add_option("--verbose", dest="verbose", default=False, action="store_true",
                     help="Print blocks that match")
   (options, args) = parser.parse_args()
@@ -52,18 +54,23 @@ def main():
     data = parse_Block(block_datastream)
     coinbase = data['transactions'][0]
     scriptSig = coinbase['txIn'][0]['scriptSig']
-    if re.search(options.lookfor, scriptSig) is not None:
-      results['matched'] += 1
-      if options.verbose: print("Block %d : %s"%(block_data['nHeight'], scriptSig.encode('string_escape')) )
-    results['searched'] += 1
+    if results['skipped'] < options.start:
+      results['skipped'] += 1
+    else:
+      results['checked'] += 1
+      if re.search(options.lookfor, scriptSig) is not None:
+        results['matched'] += 1
+        if options.verbose: print("Block %d : %s"%(block_data['nHeight'], scriptSig.encode('string_escape')) )
 
+    results['searched'] += 1
     return results['searched'] < options.howmany
 
   scan_blocks(db_dir, db_env, count_matches)
 
   db_env.close()
 
-  print("Found %d matches in %d blocks\n"%(results['matched'], results['searched']))
+  percent = (100.0*results['matched'])/results['checked']
+  print("Found %d matches in %d blocks (%.1f percent)"%(results['matched'], results['checked'], percent))
 
 if __name__ == '__main__':
     main()
