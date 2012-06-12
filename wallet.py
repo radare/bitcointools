@@ -233,7 +233,7 @@ def dump_wallet(db_env, print_wallet, print_wallet_transactions, transaction_fil
       print(" Created: "+time.ctime(d['created'])+" Expires: "+time.ctime(d['expires'])+" Comment: "+d['comment'])
     elif type == "ckey":
       print("PubKey "+ short_hex(d['public_key']) + " " + public_key_to_bc_address(d['public_key']) +
-            ": Encrypted PriKey "+ short_hex(d['crypted_key']))
+            ": Encrypted PriKey "+ long_hex(d['crypted_key'])) # short_hex()
     elif type == "mkey":
       print("Master Key %d"%(d['nID']) + ": 0x"+ short_hex(d['crypted_key']) +
             ", Salt: 0x"+ short_hex(d['salt']) +
