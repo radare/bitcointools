@@ -2,7 +2,7 @@
 # Code for parsing the wallet.dat file
 #
 
-from bsddb.db import *
+from bsddb3.db import *
 import logging
 import re
 import sys

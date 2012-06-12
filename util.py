@@ -2,7 +2,7 @@
 # Misc util routines
 #
 
-from bsddb.db import *
+from bsddb3.db import *
 
 def long_hex(bytes):
   return bytes.encode('hex_codec')

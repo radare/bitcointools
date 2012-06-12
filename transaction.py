@@ -2,7 +2,7 @@
 # Code for dumping a single transaction, given its ID
 #
 
-from bsddb.db import *
+from bsddb3.db import *
 import logging
 import os.path
 import sys

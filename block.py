@@ -2,7 +2,7 @@
 # Code for dumping a single block, given its ID (hash)
 #
 
-from bsddb.db import *
+from bsddb3.db import *
 import logging
 import os.path
 import re

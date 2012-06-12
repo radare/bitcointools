@@ -2,7 +2,7 @@
 # Code for parsing the blkindex.dat file
 #
 
-from bsddb.db import *
+from bsddb3.db import *
 import logging
 from operator import itemgetter
 import sys

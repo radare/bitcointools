@@ -2,7 +2,7 @@
 #
 # Code for dumping the bitcoin Berkeley db files in a human-readable format
 #
-from bsddb.db import *
+from bsddb3.db import *
 import logging
 import sys
 

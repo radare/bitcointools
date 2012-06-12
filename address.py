@@ -4,7 +4,7 @@
 # successfully read addr.dat...
 #
 
-from bsddb.db import *
+from bsddb3.db import *
 import logging
 from operator import itemgetter
 import sys
